@@ -1,0 +1,31 @@
+## pCPU - Developer Reference
+
+1. General instruction format
+	Every instruction has format of " INSTRUCTION_CODE [ARGUMENT1 ARGUMENT2 ...] ". Count of arguments can differ. Size of each argument is usually 16-bits in order to handle whole memory pointer in 
+one argument. Except for jumping instructions, after executing single command, the execution offset is moved to the forwarding instruction.
+
+2. Instruction reference
+	* <pointer> - argument in "<>" brackets is treated as a 16-bit pointer in the memory.
+	I. MOV		<destination> <source> - copies value from <source> to <destination>. => destination = source
+
+	II. ADD 	<destination> <source> - adds a value from <source> to the value of <destination>. => destination += source
+	III. SUB	<destination> <source> - substracts value of <source> from <destination>. => destination -= source
+	IV. MUL		<destination> <source> - multiplies value of <destination> with value from <source>. => destination *= source
+	V. DIV		<destination> <source> - divides value of <destination> with value from <source>. => destination /= source
+	
+	VI. JMP		<pointer> - jumps code execution offset to the specified pointer
+	VII. CMP	<pointerA> <pointerB> - compares values from the specified memory pointers; See: 3. Comparation
+	VIII. JE	<pointer> - jumps to the specified pointer only when CF == 0x01
+	IX. JNE		<pointer> - jumps to the specified pointer only when CF is other than 0x01
+	X. JG		<pointer> - jumps to the specified pointer only when value of the first argument in comparation was bigger
+	XI. JL		<pointer> - jumps to the specified pointer only when value of the first argument in comparation was less
+
+	XII. INT 	[no arguments] - executes interrupt which code is set in the NF register
+
+	XIII. MOVP	<destination> <source> - works like MOV, but the source value is treated as a pointer (used to make a simple loop)
+
+3. Comparation
+	After executing CMP instruction. The CF flags will be set as below:
+	0x01: values are equal
+	0x02: value of first argument is bigger
+	0x03: value of first argument is less

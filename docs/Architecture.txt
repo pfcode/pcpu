@@ -1,0 +1,33 @@
+## pCPU architecture overview
+
+0. Overall puropse of this project
+	There is no exact purpose of making the "imagined CPU" architecture. I was simply bored on the lecture and had nothing to do with my notebook that would make more sense (except listening to the lecturer ) :]
+
+1. ROM
+	ROM is a read-only storage with maximum size of 64 bytes. Its main purpose is to load actual OS kernel.
+	The processor, when booted up, copies ROM to the beginning of RAM memory. Then it starts executing the code from 0x0000 offset of RAM.
+
+2. RAM
+	Due to 16-bit pointers used by processor, only 64KB of maximum memory can be theoretically adressed. In fact, that size is a little bit smaller, because of
+	registers that are mapped to the very last memory offsets. Below, you can find basic memory map of this platform:
+	
+	[0x0000:0x003F | 64B] - early startup code copied from ROM, OS kernel can reallocate this memory for its purposes
+	[0x0040:0xEFFF | 59.9KB] - free to use memory
+	[0xF000:0xFF00 | 3.75KB] - reserved for device buffers
+	[0xFF00:0xFFFF | 256B] - reserved for CPU (registers, flags, features that can be implemented in the future)
+
+3. Registers
+	You have 4 registers that are preferred for any usage: AX, BX, CX, DX. Note, that some of them can be needed by the interrupts to retrieve function arguments.
+	There are also 2 flag registers: NF - used for choosing proper interrupt and CF - Comparation Flag used for store value returned from CMP function.
+
+	Registers offsets in the RAM:
+	AX: 0xFFFA
+	BX: 0xFFFB
+	CX: 0xFFFC
+	DX: 0xFFFD
+	CF: 0xFFFE
+	NF: 0xFFFF
+
+4. Instructions
+	CPU handles some primitive instructions used for manipulating memory, arithmetics, logic, jumping, requesting interrupts, etc.. 
+	More informations about instructions are placed in the Developer Reference.
