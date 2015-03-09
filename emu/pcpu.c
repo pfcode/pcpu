@@ -26,10 +26,10 @@
 #define CMP 0x07
 #define JE 0x08
 #define JNE 0x09
-#define JG 0xA0
-#define JL 0xA1
-#define INT 0xA2
-#define MOVP 0xA3
+#define JG 0x0A
+#define JL 0x0B
+#define INT 0x0C
+#define MOVP 0x0D
 
 const unsigned char rom[ROMSIZE] = {
 	MOV, 0xFF, 0xFD, 0x00, 0x31, MOVP, 0xFF, 0xFB,
@@ -150,29 +150,28 @@ void execute(int offset){
 				if(getRAM(CF) != 0x01) offset = (getRAM(offset+1) << 8) + getRAM(offset+2);
 				else offset+=3;
 				break;
-			case 0xA0: /* Instruction: 0xA0 JG | Args: 2-bit pointer | Jumps if value of pointerA > value of pointerB */
+			case JG: /* Args: 2-bit pointer | Jumps if value of pointerA > value of pointerB */
 				if(getRAM(CF) == 0x02) offset = (getRAM(offset+1) << 8) + getRAM(offset+2);
 				else offset+=3;
 				break;
-			case 0xA1: /* Instruction: 0xA1 JL | Args: 2-bit pointer | Jumps if value of pointerB < value of pointerA */
+			case JL: /* Args: 2-bit pointer | Jumps if value of pointerB < value of pointerA */
 				if(getRAM(CF) == 0x03) offset = (getRAM(offset+1) << 8) + getRAM(offset+2);
 				else offset+=3;
 				break;
-			case 0xA2: /* Instruction: 0xA2 INT | No args, NF needs to be set | Executes interrupt */
+			case INT: /* No args, NF needs to be set | Executes interrupt */
 				interrupt();
 				offset+=1;
 				break;
-			case 0xA3: /* Instruction: 0xA3 MOVP | Args: 2-bit destination, 2-bit pointer to pointer [xD] | Moves pointer */
+			case MOVP: /* Args: 2-bit destination, 2-bit pointer to pointer [xD] | Moves pointer */
 				int dest = (getRAM(offset+1) << 8) + getRAM(offset+2);
 				int p = (getRAM(offset+3) << 8) + getRAM(offset+4);
 				int source = getRAM(getRAM(p));
-				//xprintf("[XD]\tdest=%04x p=%04x source=%04x", dest, p, source);
 				setRAM(dest, source);
 				offset+=5;
 				break;
 		}
 	}
-	printf("\n[INFO] Stopping code execution at %04x\n", offset);
+	printf("\n[INFO] Stopping code execution at %04x. Steps done: %d\n", offset, step);
 }
 
 void memmap(int start, int end){
@@ -193,10 +192,25 @@ void regdump(){
 	printf("DX: %02x | CF: %02x | NF: %02x\n", getRAM(DX), getRAM(CF), getRAM(NF));
 }
 
-int main(){
-	printf("[INFO] Loading ROM\n");	/* Load ROM to RAM */
+int main(int argc, char *argv[]){
+	/* Load ROM to RAM */
 	ram = (unsigned char *)malloc(RAMSIZE);
-	memcpy((void *)ram, rom, ROMSIZE);
+	ram = (unsigned char *)memset((void *) ram, 0, RAMSIZE);
+	if(argc > 1){
+		printf("[INFO] Loading ROM from file: %s\n", argv[1]);
+		FILE *fp = fopen(argv[1], "rb+");
+		int c = fgetc(fp);
+		int i = 0;
+		while(c != EOF){
+			ram[i] = c;
+			i++;
+			c = fgetc(fp);
+		}
+		fclose(fp);
+	} else{
+		printf("[INFO] Loading ROM (hardcoded)\n");
+		memcpy((void *)ram, rom, ROMSIZE);
+	}
 
 	printf("[INFO] Starting code at 0x00\n");
 	/* Execute code at 0x00 RAM offset */
