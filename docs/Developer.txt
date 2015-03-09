@@ -1,5 +1,7 @@
 ## pCPU - Developer Reference
 
+# Machine code development
+
 1. General instruction format
 	Every instruction has format of " INSTRUCTION_CODE [ARGUMENT1 ARGUMENT2 ...] ". Count of arguments can differ. Size of each argument is usually 16-bits in order to handle whole memory pointer in 
 one argument. Except for jumping instructions, after executing single command, the execution offset is moved to the forwarding instruction.
@@ -29,3 +31,38 @@ one argument. Except for jumping instructions, after executing single command, t
 	0x01: values are equal
 	0x02: value of first argument is bigger
 	0x03: value of first argument is less
+
+# Assembler code development
+
+1. General instruction format
+	Instructions has format of "OPCODE_NAME [ARGUMENT1 ARGUMENT2 ...]". Opcode names are listed and explained in the 
+previous section.
+
+2. Arguments
+	Arguments can be one of a few types:
+	a) hexadecimal pointer, eg. 0x00aa
+	b) symbolic, eg. AX (note that currently there are only register symbols supported)
+	c) hexadecimal constant, eg. #0x1a
+	d) decimal constant, eg. #55
+	e) char constant, eg. #'c'
+	f) variables, eg. .variable_name
+
+	Note that constant values are automatically allocated in the program stack during compillation.
+
+3. Variables
+	You can define your own variables that you can point to something manually or let compiller allocate memory for you.
+	a) Variable as a pointer, eg. VAR .ptr 0xff1d
+	b) Allocated variable, eg. VAR .lifeandevrthng #42
+	
+	While parsing a single instruction compiller will search for the dot "." in front of the argument - it is needed by 
+compiller to treat argument as a variable.
+
+4. Binary format
+	There is none of special information about the executable like a header in the binary file. First bytes are allocated 
+for instructions and their arguments, after them there is a NULL [0x00] instruction to stop program execution. After that comes 
+the define stack.
+
+5. Comments
+	You are allowed to use comments in your code. To comment something, just type a semi-colon ";" as a first character on 
+the line. It will be ignored by compiller as well as an empty line.
+	
